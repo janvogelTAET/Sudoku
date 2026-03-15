@@ -1,0 +1,5 @@
+C:\git\Sudoku\mySudoku.exe
+C:\git\Sudoku\mySudoku.dll
+C:\git\Sudoku\mySudoku.deps.json
+C:\git\Sudoku\mySudoku.runtimeconfig.json
+C:\git\Sudoku\mySudoku.pdb

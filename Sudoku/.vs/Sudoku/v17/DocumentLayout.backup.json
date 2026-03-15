@@ -1,0 +1,84 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\git\\Sudoku\\Sudoku\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{41453C5F-BC84-4AF3-A884-D76B6372EFC5}|mySudoku\\mySudoku.csproj|c:\\git\\sudoku\\sudoku\\mysudoku\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{41453C5F-BC84-4AF3-A884-D76B6372EFC5}|mySudoku\\mySudoku.csproj|solutionrelative:mysudoku\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{41453C5F-BC84-4AF3-A884-D76B6372EFC5}|mySudoku\\mySudoku.csproj|c:\\git\\sudoku\\sudoku\\mysudoku\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{41453C5F-BC84-4AF3-A884-D76B6372EFC5}|mySudoku\\mySudoku.csproj|solutionrelative:mysudoku\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{41453C5F-BC84-4AF3-A884-D76B6372EFC5}|mySudoku\\mySudoku.csproj|c:\\git\\sudoku\\sudoku\\mysudoku\\sudokugenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{41453C5F-BC84-4AF3-A884-D76B6372EFC5}|mySudoku\\mySudoku.csproj|solutionrelative:mysudoku\\sudokugenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{41453C5F-BC84-4AF3-A884-D76B6372EFC5}|mySudoku\\mySudoku.csproj|c:\\git\\sudoku\\sudoku\\mysudoku\\sudokucell.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{41453C5F-BC84-4AF3-A884-D76B6372EFC5}|mySudoku\\mySudoku.csproj|solutionrelative:mysudoku\\sudokucell.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "SudokuGenerator.cs",
+              "DocumentMoniker": "C:\\git\\Sudoku\\Sudoku\\mySudoku\\SudokuGenerator.cs",
+              "RelativeDocumentMoniker": "mySudoku\\SudokuGenerator.cs",
+              "ToolTip": "C:\\git\\Sudoku\\Sudoku\\mySudoku\\SudokuGenerator.cs",
+              "RelativeToolTip": "mySudoku\\SudokuGenerator.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAuwEUAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-15T20:21:36.798Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "SudokuCell.cs",
+              "DocumentMoniker": "C:\\git\\Sudoku\\Sudoku\\mySudoku\\SudokuCell.cs",
+              "RelativeDocumentMoniker": "mySudoku\\SudokuCell.cs",
+              "ToolTip": "C:\\git\\Sudoku\\Sudoku\\mySudoku\\SudokuCell.cs",
+              "RelativeToolTip": "mySudoku\\SudokuCell.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAuwA4AAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-15T20:20:52.692Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\git\\Sudoku\\Sudoku\\mySudoku\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "mySudoku\\MainWindow.xaml",
+              "ToolTip": "C:\\git\\Sudoku\\Sudoku\\mySudoku\\MainWindow.xaml",
+              "RelativeToolTip": "mySudoku\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-03-15T20:17:57.905Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "C:\\git\\Sudoku\\Sudoku\\mySudoku\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "mySudoku\\MainWindow.xaml.cs",
+              "ToolTip": "C:\\git\\Sudoku\\Sudoku\\mySudoku\\MainWindow.xaml.cs",
+              "RelativeToolTip": "mySudoku\\MainWindow.xaml.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAA+wCMAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-15T20:17:57.326Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
