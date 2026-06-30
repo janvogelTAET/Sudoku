@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Sudoku" Height="600" Width="550" WindowStartupLocation="CenterScreen">
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="10" Width="492">
             <ComboBox x:Name="DifficultyBox" Width="100" Margin="5" VerticalContentAlignment="Center">
                 <ComboBoxItem IsSelected="True">Einfach</ComboBoxItem>
                 <ComboBoxItem>Mittel</ComboBoxItem>
@@ -11,6 +11,7 @@
             </ComboBox>
             <Button Content="Neues Spiel" Click="Start_Click" Margin="5" Padding="15,5"/>
             <Button Content="Prüfen" Click="Check_Click" Margin="5" Padding="15,5"/>
+            <TextBox Height="22" TextWrapping="Wrap" Text="Leanas Sudoku" Width="145" TextChanged="TextBox_TextChanged"/>
         </StackPanel>
 
         <ItemsControl ItemsSource="{Binding Cells}" Margin="20">

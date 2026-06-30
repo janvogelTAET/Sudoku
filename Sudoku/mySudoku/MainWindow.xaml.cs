@@ -33,5 +33,9 @@ namespace mySudoku {
         private void Check_Click(object sender, RoutedEventArgs e) {
             _viewModel.CheckBoard();
         }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) {
+
+        }
     }
 }

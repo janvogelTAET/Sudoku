@@ -1,0 +1,11 @@
+# .NET Build-Artefakte
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+
+# WICHTIG: docs/ wird NICHT ignoriert!
+# Das ist die veroeffentlichte Web-App, die GitHub Pages ausliefert.
+!docs/
