@@ -6,7 +6,6 @@
     <header>
         <h1><span class="heart">💜</span> Leanas Sudoku</h1>
         <div class="stats">
-            <div class="chip">Fehler<b>@game.Mistakes</b></div>
             <div class="chip">Zeit<b>@TimeText</b></div>
         </div>
     </header>
@@ -18,8 +17,18 @@
             <option value="@Difficulty.Schwer">😤 Schwer</option>
             <option value="@Difficulty.Experte">🔥 Experte</option>
         </select>
+        <button class="btn btn-check" @onclick="game.Check">Prüfen</button>
         <button class="btn btn-primary" @onclick="NewGame">Neues Spiel</button>
     </div>
+
+    @if (game.LastCheckErrors is int errs && !game.Solved)
+    {
+        <div class="banner @(errs == 0 ? "ok" : "bad")">
+            @(errs == 0
+                ? "✓ Alles richtig so weit – weiter so!"
+                : $"✗ Noch {errs} {(errs == 1 ? "Feld stimmt" : "Felder stimmen")} nicht")
+        </div>
+    }
 
     <div class="board">
         @foreach (var cell in game.Cells)
@@ -82,7 +91,7 @@
         <div class="card">
             <div class="big">🎉</div>
             <h2>Geschafft!</h2>
-            <p>Gelöst in @TimeText mit @game.Mistakes @(game.Mistakes == 1 ? "Fehler" : "Fehlern"). Stark! 💪</p>
+            <p>Gelöst in @TimeText. Stark gemacht! 💪</p>
             <button class="btn btn-primary" style="width:100%" @onclick="NewGame">Nochmal spielen</button>
         </div>
     </div>
@@ -153,7 +162,7 @@
             else if (cell.Row == sel.Row || cell.Col == sel.Col || cell.Box == sel.Box) classes.Add("peer");
             if (sel.Value != 0 && cell.Value == sel.Value) classes.Add("same");
         }
-        if (cell.IsWrong) classes.Add("wrong");
+        if (game.ErrorsVisible && cell.IsWrong) classes.Add("wrong");
         return string.Join(' ', classes);
     }
 

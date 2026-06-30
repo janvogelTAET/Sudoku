@@ -13,19 +13,47 @@ public class SudokuGame
     public SudokuCell? Selected { get; private set; }
     public Difficulty Difficulty { get; private set; } = Difficulty.Einfach;
     public bool NotesMode { get; private set; }
-    public int Mistakes { get; private set; }
     public int Seconds { get; set; }
     public bool Solved { get; private set; }
+
+    /// <summary>Sollen falsche Felder gerade rot markiert werden? (nur nach dem Pruefen)</summary>
+    public bool ErrorsVisible { get; private set; }
+
+    /// <summary>Gefundene Fehler bei der letzten Pruefung (null = noch nicht geprueft).</summary>
+    public int? LastCheckErrors { get; private set; }
+
+    private bool IsFull => Cells.All(c => c.Value != 0);
 
     public void NewGame(Difficulty difficulty)
     {
         Difficulty = difficulty;
         Cells = _generator.Generate(difficulty);
         Selected = null;
-        Mistakes = 0;
         Seconds = 0;
         Solved = false;
+        ErrorsVisible = false;
+        LastCheckErrors = null;
         _history.Clear();
+    }
+
+    /// <summary>
+    /// Prueft das Feld (erst am Ende bzw. auf Knopfdruck). Markiert falsche
+    /// Felder rot, zaehlt die Fehler und erkennt die fertige Loesung.
+    /// </summary>
+    public void Check()
+    {
+        ErrorsVisible = true;
+        LastCheckErrors = Cells.Count(c => !c.IsFixed && c.Value != 0 && c.Value != c.Solution);
+        if (Cells.All(c => c.Value == c.Solution))
+            Solved = true;
+    }
+
+    // Beim Tippen werden bestehende rote Markierungen wieder entfernt,
+    // damit man ungestoert weiterspielen kann.
+    private void ClearCheck()
+    {
+        ErrorsVisible = false;
+        LastCheckErrors = null;
     }
 
     public void Select(SudokuCell cell) => Selected = cell;
@@ -38,6 +66,7 @@ public class SudokuGame
         if (Selected is null || Selected.IsFixed || Solved) return;
 
         Snapshot();
+        ClearCheck();
 
         if (NotesMode && Selected.IsEmpty)
         {
@@ -56,16 +85,16 @@ public class SudokuGame
         Selected.Notes.Clear();
         RemoveNoteFromPeers(Selected, number);
 
-        if (Selected.Value != Selected.Solution)
-            Mistakes++;
-
-        CheckSolved();
+        // Erst wenn alles ausgefüllt ist, automatisch prüfen (= am Ende).
+        if (IsFull)
+            Check();
     }
 
     public void Erase()
     {
         if (Selected is null || Selected.IsFixed || Solved) return;
         Snapshot();
+        ClearCheck();
         Selected.Value = 0;
         Selected.Notes.Clear();
     }
@@ -93,17 +122,12 @@ public class SudokuGame
         cell.Notes.Clear();
         cell.IsFixed = true;
         Selected = cell;
-        CheckSolved();
+        ClearCheck();
+        if (IsFull) Check();
     }
 
     /// <summary>Wie oft eine Zahl noch eingetragen werden kann (für die Tastatur-Anzeige).</summary>
     public int Remaining(int number) => 9 - Cells.Count(c => c.Value == number);
-
-    private void CheckSolved()
-    {
-        if (Cells.All(c => c.Value == c.Solution))
-            Solved = true;
-    }
 
     private void Snapshot()
     {

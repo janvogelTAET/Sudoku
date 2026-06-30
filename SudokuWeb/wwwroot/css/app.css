@@ -53,11 +53,23 @@ select{
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238d91a8' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
   background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;
 }
+.btn{white-space:nowrap;}
 .btn-primary{
   flex:1;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));
   box-shadow:0 8px 18px rgba(109,131,242,.4);
 }
+.btn-check{
+  flex:1;color:#fff;background:linear-gradient(135deg,#21c08b,#1aa978);
+  box-shadow:0 8px 18px rgba(33,192,139,.35);
+}
 .btn:active,select:active{transform:scale(.97);}
+
+.banner{
+  margin-bottom:12px;padding:10px 14px;border-radius:12px;
+  font-size:14px;font-weight:600;text-align:center;animation:fade .2s ease;
+}
+.banner.ok{background:#dff7ee;color:#157a55;}
+.banner.bad{background:#ffe2e2;color:#c0334a;}
 
 .board{
   display:grid;grid-template-columns:repeat(9,1fr);
