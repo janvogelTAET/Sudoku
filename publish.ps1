@@ -4,10 +4,10 @@
 # Aufruf:  ./publish.ps1
 # Danach:  git add docs && git commit -m "update" && git push
 #
-# Wenn deine Freundin spielt:  https://janvogeltaet.github.io/Sudoku-with-C-and-WPF/
+# Wenn deine Freundin spielt:  https://janvogeltaet.github.io/Sudoku/
 
 $ErrorActionPreference = "Stop"
-$repoPath = "/Sudoku-with-C-and-WPF/"   # Unterordner-Pfad auf GitHub Pages
+$repoPath = "/Sudoku/"   # Unterordner-Pfad auf GitHub Pages (= Repo-Name)
 $root     = $PSScriptRoot
 $docs     = Join-Path $root "docs"
 $publish  = Join-Path $root "SudokuWeb/bin/Release/net9.0/publish/wwwroot"

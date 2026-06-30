@@ -3,7 +3,7 @@
 Ein Sudoku zum Spielen im Browser – **auf jedem Gerät, ganz ohne Installation**.
 Funktioniert auf MacBook, iPhone, Android und Windows. Einfach den Link öffnen:
 
-### ▶️ **[Hier spielen](https://janvogeltaet.github.io/Sudoku-with-C-and-WPF/)**
+### ▶️ **[Hier spielen](https://janvogeltaet.github.io/Sudoku/)**
 
 > Tipp fürs Handy: Im Browser öffnen → „Zum Home-Bildschirm hinzufügen".
 > Dann startet es wie eine echte App (sogar offline).
