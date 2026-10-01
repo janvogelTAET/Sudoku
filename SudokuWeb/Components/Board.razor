@@ -44,7 +44,12 @@
             else if (cell.Row == sel.Row || cell.Col == sel.Col || cell.Box == sel.Box) classes.Add("peer");
             if (sel.Value != 0 && cell.Value == sel.Value) classes.Add("same");
         }
-        if (Game.ErrorsVisible && cell.IsWrong) classes.Add("wrong");
+        if (Game.ErrorsVisible && cell.IsWrong)
+        {
+            // Abwechselnd zwei gleiche Animationen, damit das Wackeln bei jedem "Prüfen" neu startet.
+            classes.Add("wrong");
+            classes.Add(Game.CheckCount % 2 == 0 ? "shake-a" : "shake-b");
+        }
         return string.Join(' ', classes);
     }
 }

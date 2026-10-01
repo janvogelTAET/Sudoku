@@ -1,4 +1,5 @@
 <Sheet Title="Tägliches Rätsel" OnClose="OnClose">
+    <p class="daily-quote">@DailyMessages.For(Today)</p>
     <div class="streak-hero @(Streak > 0 ? "alive" : "")">
         <div class="big-flame">🔥</div>
         <div class="streak-number">@Streak</div>

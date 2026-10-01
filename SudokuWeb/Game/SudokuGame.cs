@@ -28,6 +28,9 @@ public class SudokuGame
     /// <summary>Gefundene Fehler bei der letzten Pruefung (null = noch nicht geprueft).</summary>
     public int? LastCheckErrors { get; private set; }
 
+    /// <summary>Wie oft wurde geprüft? (Die Oberfläche startet damit die Wackel-Animation neu.)</summary>
+    public int CheckCount { get; private set; }
+
     public bool HasCells => Cells.Length == 81;
     public bool CanUndo => _history.Count > 0;
 
@@ -65,6 +68,7 @@ public class SudokuGame
     public void Check()
     {
         if (!HasCells || Solved) return;
+        CheckCount++;
         ErrorsVisible = true;
         LastCheckErrors = Cells.Count(c => !c.IsLocked && c.Value != 0 && c.Value != c.Solution);
         if (Cells.All(c => c.Value == c.Solution))
