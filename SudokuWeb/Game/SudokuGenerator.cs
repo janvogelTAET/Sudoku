@@ -3,16 +3,18 @@ namespace SudokuWeb.Game;
 public enum Difficulty { Einfach, Mittel, Schwer, Experte }
 
 /// <summary>
-/// Erzeugt zufällige Sudoku-Rätsel mit garantiert eindeutiger Lösung.
-/// (Basiert auf der ursprünglichen WPF-Version, erweitert um die
-///  Eindeutigkeits-Prüfung beim "Löcher graben".)
+/// Erzeugt Sudoku-Rätsel mit garantiert eindeutiger Lösung.
+/// Mit einem festen Seed im <see cref="Random"/> entsteht immer dasselbe Rätsel
+/// (so funktioniert das tägliche Rätsel).
 /// </summary>
 public class SudokuGenerator
 {
-    private readonly Random _random = new();
+    private readonly Random _random;
+
+    public SudokuGenerator(Random? random = null) => _random = random ?? Random.Shared;
 
     // Anzahl der zu entfernenden Felder je Schwierigkeit.
-    private static int HolesFor(Difficulty d) => d switch
+    public static int HolesFor(Difficulty d) => d switch
     {
         Difficulty.Einfach => 38,
         Difficulty.Mittel  => 46,
@@ -38,7 +40,7 @@ public class SudokuGenerator
             int backup = puzzle[idx];
             puzzle[idx] = 0;
 
-            if (CountSolutions((int[])puzzle.Clone(), 2) != 1)
+            if (SudokuSolver.CountSolutions(puzzle, 2) != 1)
                 puzzle[idx] = backup;   // nicht mehr eindeutig -> rückgängig
             else
                 dug++;
@@ -78,32 +80,6 @@ public class SudokuGenerator
         return false;
     }
 
-    // Zählt Lösungen bis maximal <limit> (für die Eindeutigkeits-Prüfung).
-    private static int CountSolutions(int[] b, int limit)
-    {
-        int count = 0;
-        Solve(0);
-        return count;
-
-        void Solve(int pos)
-        {
-            if (count >= limit) return;
-            while (pos < 81 && b[pos] != 0) pos++;
-            if (pos == 81) { count++; return; }
-
-            for (int n = 1; n <= 9; n++)
-            {
-                if (IsSafe(b, pos, n))
-                {
-                    b[pos] = n;
-                    Solve(pos + 1);
-                    b[pos] = 0;
-                    if (count >= limit) return;
-                }
-            }
-        }
-    }
-
     private static bool IsSafe(int[] b, int pos, int num)
     {
         int row = pos / 9, col = pos % 9;
@@ -119,6 +95,15 @@ public class SudokuGenerator
         return true;
     }
 
-    private IEnumerable<int> Shuffled(IEnumerable<int> source)
-        => source.OrderBy(_ => _random.Next());
+    // Fisher-Yates: benutzt pro Element genau einen Zufallswert (reproduzierbar bei festem Seed).
+    private List<int> Shuffled(IEnumerable<int> source)
+    {
+        var list = source.ToList();
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = _random.Next(i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
+        return list;
+    }
 }
