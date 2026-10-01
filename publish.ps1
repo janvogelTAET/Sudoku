@@ -1,13 +1,14 @@
-# Veroeffentlicht die Blazor-WebAssembly-App als statische Dateien nach docs/,
-# damit GitHub Pages sie ausliefern kann.
+# Veroeffentlicht die Blazor-WebAssembly-App als statische Dateien nach docs/.
+# Den Ordner docs/ dann bei einem statischen Hoster hochladen
+# (z. B. Netlify: Site oeffnen -> Deploys -> Ordner per Drag & Drop).
 #
-# Aufruf:  ./publish.ps1
-# Danach:  git add docs && git commit -m "update" && git push
-#
-# Wenn deine Freundin spielt:  https://janvogeltaet.github.io/Sudoku/
+# Aufruf:  ./publish.ps1                 (App liegt im Root der Domain)
+#          ./publish.ps1 -BasePath /Sudoku/   (App liegt in einem Unterordner)
+
+param([string]$BasePath = "/")
 
 $ErrorActionPreference = "Stop"
-$repoPath = "/Sudoku/"   # Unterordner-Pfad auf GitHub Pages (= Repo-Name)
+$repoPath = $BasePath
 $root     = $PSScriptRoot
 $docs     = Join-Path $root "docs"
 $publish  = Join-Path $root "SudokuWeb/bin/Release/net9.0/publish/wwwroot"
@@ -27,7 +28,7 @@ $html = $html -replace '<base href="/" />', "<base href=`"$repoPath`" />"
 Set-Content $indexPath $html -Encoding utf8 -NoNewline
 
 Write-Host "4/4  .nojekyll + 404.html werden erstellt..." -ForegroundColor Cyan
-# .nojekyll: damit GitHub Pages den _framework-Ordner (mit _) nicht ignoriert
+# .nojekyll: falls doch mal GitHub Pages genutzt wird (sonst ignoriert es _framework)
 New-Item -ItemType File -Path (Join-Path $docs ".nojekyll") -Force | Out-Null
 # 404.html: Fallback, damit Direktlinks / Reload funktionieren
 Copy-Item $indexPath (Join-Path $docs "404.html") -Force
