@@ -10,7 +10,9 @@ namespace SudokuWeb.Services;
 /// </summary>
 public class PlayerData(BrowserInterop browser)
 {
-    private const string GameKey = "sudoku.game";
+    private const string FreeGameKey = "sudoku.game";           // Schlüssel aus der ersten Version beibehalten
+    private const string DailyGameKey = "sudoku.daily-game";
+    private const string ActiveSlotKey = "sudoku.active-slot";
     private const string StatsKey = "sudoku.stats";
     private const string DailyKey = "sudoku.daily";
 
@@ -24,12 +26,33 @@ public class PlayerData(BrowserInterop browser)
         Daily = await LoadAsync(DailyKey, AppJsonContext.Default.DailyProgress) ?? new DailyProgress();
     }
 
-    public Task<SavedGame?> LoadGameAsync() => LoadAsync(GameKey, AppJsonContext.Default.SavedGame);
+    // ---- Spielstände: zwei getrennte Plätze (frei / täglich) ----
 
-    public Task SaveGameAsync(SudokuGame game)
-        => SaveAsync(GameKey, game.ToSaved(), AppJsonContext.Default.SavedGame);
+    /// <summary>Lädt beide Plätze und merkt sich, welcher zuletzt aktiv war.</summary>
+    public async Task<(SavedGame? Free, SavedGame? Daily, GameSlot Active)> LoadSlotsAsync()
+    {
+        var free = await LoadAsync(FreeGameKey, AppJsonContext.Default.SavedGame);
+        var daily = await LoadAsync(DailyGameKey, AppJsonContext.Default.SavedGame);
+        string? active = await browser.GetItemAsync(ActiveSlotKey);
+        return (free, daily, active == nameof(GameSlot.Daily) ? GameSlot.Daily : GameSlot.Free);
+    }
 
-    public Task ClearGameAsync() => browser.RemoveItemAsync(GameKey);
+    /// <summary>Speichert einen Platz (oder löscht ihn, wenn er leer ist).</summary>
+    public Task SaveSlotAsync(GameSession session, GameSlot slot)
+    {
+        string key = slot == GameSlot.Daily ? DailyGameKey : FreeGameKey;
+        return session.SavedFor(slot) is { } saved
+            ? SaveAsync(key, saved, AppJsonContext.Default.SavedGame)
+            : browser.RemoveItemAsync(key);
+    }
+
+    /// <summary>Speichert beide Plätze und den aktiven (nach einem Wechsel).</summary>
+    public async Task SaveAllSlotsAsync(GameSession session)
+    {
+        await SaveSlotAsync(session, GameSlot.Free);
+        await SaveSlotAsync(session, GameSlot.Daily);
+        await browser.SetItemAsync(ActiveSlotKey, session.ActiveSlot.ToString());
+    }
 
     public Task SaveStatsAsync() => SaveAsync(StatsKey, Stats, AppJsonContext.Default.GameStats);
 

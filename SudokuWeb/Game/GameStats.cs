@@ -36,7 +36,25 @@ public class GameStats
     [JsonIgnore]
     public int TotalWon => ByDifficulty.Values.Sum(s => s.Won);
 
+    /// <summary>Tage (JJJJ-MM-TT), für die das tägliche Rätsel schon als "gespielt" gezählt wurde.</summary>
+    public List<string> DailyStarted { get; set; } = new();
+
     public void RecordStarted(Difficulty difficulty) => For(difficulty).Played++;
+
+    /// <summary>
+    /// Zählt das tägliche Rätsel als gespielt – aber pro Tag nur einmal, egal wie oft man
+    /// es verlässt und wieder aufnimmt. Gibt true zurück, wenn es neu gezählt wurde.
+    /// </summary>
+    public bool RecordDailyStarted(DateOnly day)
+    {
+        string key = day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        if (DailyStarted.Contains(key)) return false;
+
+        DailyStarted.Add(key);
+        if (DailyStarted.Count > 400) DailyStarted.RemoveAt(0);   // nur die letzten Tage merken
+        RecordStarted(DailyPuzzle.Level);
+        return true;
+    }
 
     /// <summary>Verbucht einen Sieg. Gibt true zurück, wenn es eine neue Bestzeit ist.</summary>
     public bool RecordWin(Difficulty difficulty, int seconds, int hintsUsed)

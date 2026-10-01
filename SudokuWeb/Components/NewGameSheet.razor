@@ -1,35 +1,76 @@
-<Sheet Title="Neues Spiel" OnClose="OnClose">
-    <button class="daily-card" @onclick="OnDaily">
-        <span class="flame">🔥</span>
-        <span class="item-text">
-            <b>Tägliches Rätsel</b>
-            <small>@(DailyDone ? "Heute schon geschafft ✓" : "Jeden Tag ein neues – halte deine Serie!")</small>
-        </span>
-        <span class="chev">›</span>
-    </button>
+<Sheet Title="@(pending is null ? "Neues Spiel" : "Aktuelles Spiel verwerfen?")" OnClose="OnClose">
+    @if (pending is Difficulty level)
+    {
+        <p class="confirm-text">
+            Dein angefangenes Spiel (<b>@FreeProgressText</b>) geht dabei verloren.
+        </p>
+        <button class="btn btn-primary wide" @onclick="() => OnStart.InvokeAsync(level)">
+            Verwerfen und @level.ToString() starten
+        </button>
+        <button class="btn btn-ghost wide" @onclick="() => pending = null">Abbrechen</button>
+    }
+    else
+    {
+        <button class="daily-card" @onclick="OnDaily">
+            <span class="flame">🔥</span>
+            <span class="item-text">
+                <b>Tägliches Rätsel</b>
+                <small>@DailyText</small>
+            </span>
+            <span class="chev">›</span>
+        </button>
 
-    <div class="section-label">Zufälliges Spiel</div>
-    <div class="levels">
-        @foreach (var level in Enum.GetValues<Difficulty>())
+        @if (ResumeFreeText is not null)
         {
-            var d = level;
-            <button class="level" @onclick="() => OnStart.InvokeAsync(d)">
-                <span class="emoji">@d.Emoji()</span>
-                <span class="item-text"><b>@d</b><small>@d.Tagline()</small></span>
+            <button class="resume-card" @onclick="OnResumeFree">
+                <span class="item-text">
+                    <b>Freies Spiel fortsetzen</b>
+                    <small>@ResumeFreeText</small>
+                </span>
+                <span class="chev">›</span>
             </button>
         }
-    </div>
 
-    @if (WillDiscard)
-    {
-        <p class="note">Das aktuelle Spiel wird dabei beendet.</p>
+        <div class="section-label">Neues zufälliges Spiel</div>
+        <div class="levels">
+            @foreach (var option in Enum.GetValues<Difficulty>())
+            {
+                var d = option;
+                <button class="level" @onclick="() => Choose(d)">
+                    <span class="emoji">@d.Emoji()</span>
+                    <span class="item-text"><b>@d</b><small>@d.Tagline()</small></span>
+                </button>
+            }
+        </div>
     }
 </Sheet>
 
 @code {
-    [Parameter] public bool DailyDone { get; set; }
-    [Parameter] public bool WillDiscard { get; set; }
+    private Difficulty? pending;
+
+    [Parameter] public string DailyText { get; set; } = "";
+
+    /// <summary>Gesetzt, wenn gerade das Daily läuft und ein freies Spiel geparkt ist (z. B. "Einfach · 3:21").</summary>
+    [Parameter] public string? ResumeFreeText { get; set; }
+
+    /// <summary>Würde ein neues freies Spiel einen angefangenen Stand verwerfen?</summary>
+    [Parameter] public bool FreeInProgress { get; set; }
+
+    /// <summary>Beschreibung des angefangenen freien Spiels für die Rückfrage.</summary>
+    [Parameter] public string FreeProgressText { get; set; } = "";
+
     [Parameter] public EventCallback<Difficulty> OnStart { get; set; }
     [Parameter] public EventCallback OnDaily { get; set; }
+    [Parameter] public EventCallback OnResumeFree { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
+
+    private Task Choose(Difficulty level)
+    {
+        if (FreeInProgress)
+        {
+            pending = level;       // erst nachfragen
+            return Task.CompletedTask;
+        }
+        return OnStart.InvokeAsync(level);
+    }
 }

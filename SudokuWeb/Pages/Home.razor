@@ -49,12 +49,14 @@ else
     @switch (sheet)
     {
         case Sheets.NewGame:
-            <NewGameSheet DailyDone="DoneToday" WillDiscard="game.InProgress"
-                          OnStart="StartNewGame" OnDaily="() => sheet = Sheets.Daily" OnClose="CloseSheet" />
+            <NewGameSheet DailyText="@DailyCardText" ResumeFreeText="@ResumeFreeText"
+                          FreeInProgress="session.FreeGameInProgress" FreeProgressText="@FreeProgressText"
+                          OnStart="StartNewGame" OnDaily="() => sheet = Sheets.Daily"
+                          OnResumeFree="ResumeFree" OnClose="CloseSheet" />
             break;
         case Sheets.Daily:
-            <DailySheet Progress="Data.Daily" Today="today" InProgressToday="PlayingTodaysDaily"
-                        WillDiscard="game.InProgress && !PlayingTodaysDaily"
+            <DailySheet Progress="Data.Daily" Today="today" Resumable="session.DailyResumable(today)"
+                        SwitchedAway="session.ActiveSlot == GameSlot.Free && game.InProgress"
                         OnStartDaily="StartDaily" OnClose="CloseSheet" />
             break;
         case Sheets.Stats:
@@ -72,7 +74,8 @@ else
 @code {
     private enum Sheets { None, NewGame, Daily, Stats }
 
-    private readonly SudokuGame game = new();
+    private GameSession session = default!;
+    private SudokuGame game => session.Game;
     private DotNetObjectReference<Home>? selfReference;
 
     private bool loaded;
@@ -80,7 +83,6 @@ else
     private string theme = "light";
     private Sheets sheet = Sheets.None;
 
-    private bool winHandled;
     private bool showWin;
     private bool newRecord;
     private int? dailyStreakAfterWin;
@@ -88,7 +90,18 @@ else
     private bool Paused => sheet != Sheets.None || showWin;
     private int Streak => Data.Daily.CurrentStreak(today);
     private bool DoneToday => Data.Daily.IsSolved(today);
-    private bool PlayingTodaysDaily => game.DailyDate == today && !game.Solved;
+
+    private string DailyCardText => DoneToday ? "Heute schon geschafft ✓"
+        : session.DailyResumable(today) ? "Weiterspielen"
+        : "Jeden Tag ein neues – halte deine Serie!";
+
+    private string? ResumeFreeText => session.ParkedFreeGame is { } parked
+        ? $"{parked.Difficulty.Emoji()} {parked.Difficulty} · {GameText.Time(parked.Seconds)}"
+        : null;
+
+    private string FreeProgressText => session.SavedFor(GameSlot.Free) is { } free
+        ? $"{free.Difficulty} · {GameText.Time(free.Seconds)}"
+        : "";
 
     private string StatusClass => game.LastCheckErrors is int errors && !game.Solved ? (errors == 0 ? "ok" : "bad") : "";
 
@@ -112,10 +125,11 @@ else
         today = await Browser.GetTodayAsync();
         theme = await Browser.GetThemeAsync();
 
-        // Spielstand von der letzten Sitzung fortsetzen (die iPhone-App wird oft vom System beendet).
-        var saved = await Data.LoadGameAsync();
-        if (!game.Restore(saved))
-            await StartNewGame(Difficulty.Einfach);
+        // Spielstände von der letzten Sitzung fortsetzen (die iPhone-App wird oft vom System beendet).
+        session = new GameSession(Data.Stats, Data.Daily);
+        var (free, daily, active) = await Data.LoadSlotsAsync();
+        session.Initialize(free, daily, active);
+        await AfterGameChanged();
 
         selfReference = DotNetObjectReference.Create(this);
         await Browser.ListenForVisibilityAsync(selfReference);
@@ -141,67 +155,56 @@ else
 
     private async Task StartNewGame(Difficulty difficulty)
     {
-        game.NewGame(difficulty);
-        Data.Stats.RecordStarted(difficulty);
-        await AfterGameStarted();
+        session.StartFree(difficulty);
+        await AfterGameChanged();
     }
 
     private async Task StartDaily()
     {
-        if (DoneToday) return;
-        if (PlayingTodaysDaily)
-        {
-            sheet = Sheets.None;     // läuft schon -> einfach weiterspielen
-            return;
-        }
-
         today = await Browser.GetTodayAsync();
-        game.StartDaily(today);
-        Data.Stats.RecordStarted(game.Difficulty);
-        await AfterGameStarted();
+        if (session.StartOrResumeDaily(today))
+            await AfterGameChanged();
     }
 
-    private async Task AfterGameStarted()
+    private async Task ResumeFree()
     {
-        winHandled = false;
+        if (session.ResumeFree())
+            await AfterGameChanged();
+    }
+
+    // Nach Start/Wechsel eines Spiels: Anzeige aufräumen, Statistik und beide Plätze sichern.
+    private async Task AfterGameChanged()
+    {
         showWin = false;
         sheet = Sheets.None;
         await Data.SaveStatsAsync();
-        await SaveGame();
+        await Data.SaveAllSlotsAsync(session);
     }
 
     private async Task OnGameChanged()
     {
-        if (game.Solved && !winHandled)
-            await HandleWin();
-        else
-            await SaveGame();
-    }
-
-    private async Task HandleWin()
-    {
-        winHandled = true;
-        newRecord = Data.Stats.RecordWin(game.Difficulty, game.Seconds, game.HintsUsed);
-
-        dailyStreakAfterWin = null;
-        if (game.DailyDate is { } day)
+        if (!game.Solved)
         {
-            today = await Browser.GetTodayAsync();
-            Data.Daily.MarkSolved(day, game.Seconds);
-            dailyStreakAfterWin = Data.Daily.CurrentStreak(today);
-            await Data.SaveDailyAsync();
+            await SaveGame();
+            return;
         }
 
+        today = await Browser.GetTodayAsync();
+        if (session.HandleWin(today) is not { } result) return;
+
+        newRecord = result.NewRecord;
+        dailyStreakAfterWin = result.DailyStreak;
         await Data.SaveStatsAsync();
-        await Data.ClearGameAsync();    // fertiges Spiel nicht beim nächsten Start wiederherstellen
+        await Data.SaveDailyAsync();
+        await Data.SaveSlotAsync(session, session.ActiveSlot);   // gelöst -> Platz wird geleert
         showWin = true;
     }
 
-    // Speichert nach jedem Zug (und regelmäßig die Zeit) den Spielstand im Browser.
+    // Speichert nach jedem Zug (und regelmäßig die Zeit) den aktiven Platz im Browser.
     private async Task SaveGame()
     {
         if (game.HasCells && !game.Solved)
-            await Data.SaveGameAsync(game);
+            await Data.SaveSlotAsync(session, session.ActiveSlot);
     }
 
     private void CloseSheet() => sheet = Sheets.None;

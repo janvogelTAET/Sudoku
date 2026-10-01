@@ -24,6 +24,12 @@ public class SavedGame
     public bool[] Hinted { get; set; } = [];
     public int[] Notes { get; set; } = [];
 
+    /// <summary>Wurde schon gespielt (Zeit gelaufen oder eigene Zahl/Notiz eingetragen)?</summary>
+    [JsonIgnore]
+    public bool HasProgress =>
+        Seconds > 0 || Enumerable.Range(0, Math.Min(Values.Length, Given.Length))
+            .Any(i => (Values[i] != 0 && !Given[i]) || (i < Notes.Length && Notes[i] != 0));
+
     /// <summary>Sieht der Spielstand vollständig und plausibel aus?</summary>
     [JsonIgnore]
     public bool IsValid =>
