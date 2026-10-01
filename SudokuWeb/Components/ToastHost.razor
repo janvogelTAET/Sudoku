@@ -1,0 +1,42 @@
+@* Zeigt freigeschaltete Abzeichen als kleinen Toast an, einen nach dem anderen. *@
+@if (current is not null)
+{
+    <div class="toast" role="status">
+        <span class="toast-emoji">@current.Emoji</span>
+        <span class="toast-text">
+            <small>Abzeichen freigeschaltet</small>
+            <b>@current.Title</b>
+            <span>@current.Description</span>
+        </span>
+    </div>
+}
+
+@code {
+    private readonly Queue<Achievement> queue = new();
+    private Achievement? current;
+    private bool running;
+
+    /// <summary>Reiht Abzeichen ein; sie erscheinen nacheinander.</summary>
+    public void Show(IEnumerable<Achievement> achievements)
+    {
+        foreach (var a in achievements) queue.Enqueue(a);
+        if (!running && queue.Count > 0)
+            _ = RunAsync();
+    }
+
+    private async Task RunAsync()
+    {
+        running = true;
+        await Task.Delay(900);          // erst den Gewinn-Dialog wirken lassen
+        while (queue.TryDequeue(out var next))
+        {
+            current = next;
+            StateHasChanged();
+            await Task.Delay(3800);
+            current = null;
+            StateHasChanged();
+            await Task.Delay(350);
+        }
+        running = false;
+    }
+}

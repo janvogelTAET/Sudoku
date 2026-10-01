@@ -47,6 +47,7 @@ else
     </div>
 
     <InstallHint />
+    <ToastHost @ref="toasts" />
 
     @switch (sheet)
     {
@@ -62,7 +63,7 @@ else
                         OnStartDaily="StartDaily" OnClose="CloseSheet" />
             break;
         case Sheets.Stats:
-            <StatsSheet Stats="Data.Stats" Daily="Data.Daily" OnClose="CloseSheet" />
+            <StatsSheet Stats="Data.Stats" Daily="Data.Daily" Book="Data.Achievements" OnClose="CloseSheet" />
             break;
     }
 
@@ -79,6 +80,7 @@ else
     private GameSession session = default!;
     private SudokuGame game => session.Game;
     private DotNetObjectReference<Home>? selfReference;
+    private ToastHost? toasts;
 
     private bool loaded;
     private DateOnly today;
@@ -128,7 +130,7 @@ else
         theme = await Browser.GetThemeAsync();
 
         // Spielstände von der letzten Sitzung fortsetzen (die iPhone-App wird oft vom System beendet).
-        session = new GameSession(Data.Stats, Data.Daily);
+        session = new GameSession(Data.Stats, Data.Daily, Data.Achievements);
         var (free, daily, active) = await Data.LoadSlotsAsync();
         session.Initialize(free, daily, active);
         await AfterGameChanged();
@@ -198,8 +200,10 @@ else
         dailyStreakAfterWin = result.DailyStreak;
         await Data.SaveStatsAsync();
         await Data.SaveDailyAsync();
+        await Data.SaveAchievementsAsync();
         await Data.SaveSlotAsync(session, session.ActiveSlot);   // gelöst -> Platz wird geleert
         showWin = true;
+        toasts?.Show(result.NewAchievements);
     }
 
     // Speichert nach jedem Zug (und regelmäßig die Zeit) den aktiven Platz im Browser.

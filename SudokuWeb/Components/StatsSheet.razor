@@ -24,11 +24,28 @@
         </tbody>
     </table>
     <p class="note">Bestzeiten zählen nur ohne Tipp.</p>
+
+    <div class="section-label">Abzeichen · @unlockedCount / @Achievements.All.Count</div>
+    <div class="badges">
+        @foreach (var badge in Achievements.All)
+        {
+            bool unlocked = Book.IsUnlocked(badge.Id);
+            <div class="badge @(unlocked ? "" : "locked")" title="@badge.Description">
+                <span class="badge-emoji">@(unlocked ? badge.Emoji : "🔒")</span>
+                <b>@badge.Title</b>
+                <small>@badge.Description</small>
+            </div>
+        }
+    </div>
+
     <p class="credit">Für Leana 💖 · viel Spaß beim Rätseln</p>
 </Sheet>
 
 @code {
     [Parameter, EditorRequired] public GameStats Stats { get; set; } = default!;
     [Parameter, EditorRequired] public DailyProgress Daily { get; set; } = default!;
+    [Parameter, EditorRequired] public AchievementBook Book { get; set; } = default!;
     [Parameter] public EventCallback OnClose { get; set; }
+
+    private int unlockedCount => Achievements.All.Count(a => Book.IsUnlocked(a.Id));
 }

@@ -15,15 +15,18 @@ public class PlayerData(BrowserInterop browser)
     private const string ActiveSlotKey = "sudoku.active-slot";
     private const string StatsKey = "sudoku.stats";
     private const string DailyKey = "sudoku.daily";
+    private const string AchievementsKey = "sudoku.achievements";
 
     public GameStats Stats { get; private set; } = new();
     public DailyProgress Daily { get; private set; } = new();
+    public AchievementBook Achievements { get; private set; } = new();
 
     /// <summary>Lädt Statistik und Serie (einmal beim Start).</summary>
     public async Task LoadAsync()
     {
         Stats = await LoadAsync(StatsKey, AppJsonContext.Default.GameStats) ?? new GameStats();
         Daily = await LoadAsync(DailyKey, AppJsonContext.Default.DailyProgress) ?? new DailyProgress();
+        Achievements = await LoadAsync(AchievementsKey, AppJsonContext.Default.AchievementBook) ?? new AchievementBook();
     }
 
     // ---- Spielstände: zwei getrennte Plätze (frei / täglich) ----
@@ -55,6 +58,8 @@ public class PlayerData(BrowserInterop browser)
     }
 
     public Task SaveStatsAsync() => SaveAsync(StatsKey, Stats, AppJsonContext.Default.GameStats);
+
+    public Task SaveAchievementsAsync() => SaveAsync(AchievementsKey, Achievements, AppJsonContext.Default.AchievementBook);
 
     public Task SaveDailyAsync() => SaveAsync(DailyKey, Daily, AppJsonContext.Default.DailyProgress);
 

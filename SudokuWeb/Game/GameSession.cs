@@ -4,7 +4,7 @@ namespace SudokuWeb.Game;
 public enum GameSlot { Free, Daily }
 
 /// <summary>Was nach einem Sieg verbucht wurde (für den Gewinn-Dialog).</summary>
-public record WinResult(bool NewRecord, int? DailyStreak);
+public record WinResult(bool NewRecord, int? DailyStreak, IReadOnlyList<Achievement> NewAchievements);
 
 /// <summary>
 /// Verwaltet das aktive Spiel und die zwei Speicherplätze. Das freie Spiel und das tägliche
@@ -12,8 +12,10 @@ public record WinResult(bool NewRecord, int? DailyStreak);
 /// wo er aufgehört hat. Hier entscheidet sich auch, wann ein Spiel als "gespielt" zählt:
 /// nur wenn es frisch beginnt, nie beim Fortsetzen.
 /// </summary>
-public class GameSession(GameStats stats, DailyProgress daily)
+public class GameSession(GameStats stats, DailyProgress daily, AchievementBook? achievements = null)
 {
+    private readonly AchievementBook _achievements = achievements ?? new AchievementBook();
+
     // Der jeweils NICHT aktive Platz liegt hier "geparkt". Der aktive steckt in Game.
     private readonly Dictionary<GameSlot, SavedGame?> _parked = new()
     {
@@ -147,7 +149,9 @@ public class GameSession(GameStats stats, DailyProgress daily)
             daily.MarkSolved(day, Game.Seconds);
             streak = daily.CurrentStreak(today);
         }
-        return new WinResult(record, streak);
+
+        var info = new WinInfo(Game.Difficulty, Game.Seconds, Game.HintsUsed, Game.IsDaily, streak ?? 0, stats.TotalWon);
+        return new WinResult(record, streak, Achievements.Unlock(_achievements, info, today));
     }
 
     // ---- intern -----------------------------------------------------------

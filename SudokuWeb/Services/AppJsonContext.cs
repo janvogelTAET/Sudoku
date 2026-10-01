@@ -10,4 +10,5 @@ namespace SudokuWeb.Services;
 [JsonSerializable(typeof(SavedGame))]
 [JsonSerializable(typeof(GameStats))]
 [JsonSerializable(typeof(DailyProgress))]
+[JsonSerializable(typeof(AchievementBook))]
 internal partial class AppJsonContext : JsonSerializerContext;

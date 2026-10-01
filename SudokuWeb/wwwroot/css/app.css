@@ -262,6 +262,32 @@ h1 .heart{-webkit-text-fill-color:initial;}
 .stats-table thead th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;}
 .stats-table tbody th{text-align:left;font-weight:700;white-space:nowrap;}
 
+/* ===== Abzeichen ===== */
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.badge{
+  background:var(--soft);border-radius:16px;padding:10px 6px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.badge-emoji{font-size:28px;line-height:1.15;}
+.badge b{font-size:12px;}
+.badge small{font-size:10.5px;color:var(--muted);line-height:1.25;}
+.badge.locked{opacity:.5;}
+.badge.locked .badge-emoji{filter:grayscale(1);font-size:24px;}
+
+.toast{
+  position:fixed;z-index:120;left:50%;transform:translateX(-50%);
+  top:calc(env(safe-area-inset-top) + 10px);width:calc(100% - 24px);max-width:420px;
+  display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:20px;
+  background:var(--panel);color:var(--ink);box-shadow:0 12px 34px rgba(0,0,0,.4);
+  border:2px solid var(--fire1);animation:toast-in .45s cubic-bezier(.2,1.3,.5,1);
+}
+.toast-emoji{font-size:34px;line-height:1;}
+.toast-text{display:flex;flex-direction:column;gap:1px;}
+.toast-text small{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--fire2);}
+.toast-text b{font-size:17px;}
+.toast-text span{font-size:13px;color:var(--muted);}
+@keyframes toast-in{from{transform:translate(-50%,-40px) scale(.9);opacity:0}to{transform:translate(-50%,0) scale(1);opacity:1}}
+
 /* ===== Geschafft! ===== */
 .card{
   position:relative;z-index:1;
