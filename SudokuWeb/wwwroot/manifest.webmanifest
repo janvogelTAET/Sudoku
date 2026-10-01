@@ -1,22 +1,33 @@
 {
-  "name": "SudokuWeb",
-  "short_name": "SudokuWeb",
+  "name": "Leanas Sudoku",
+  "short_name": "Leanas Sudoku",
+  "description": "Sudoku für Leana",
+  "lang": "de",
   "id": "./",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#03173d",
+  "orientation": "portrait",
+  "background_color": "#6d83f2",
+  "theme_color": "#6d83f2",
   "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     },
     {
       "src": "icon-192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
     }
   ]
 }

@@ -14,8 +14,20 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="SudokuWeb.styles.css" rel="stylesheet" />
     <link href="manifest.webmanifest" rel="manifest" />
-    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <meta name="format-detection" content="telephone=no" />
+    <script>
+        // Theme vor dem ersten Rendern setzen (verhindert Aufblitzen im falschen Modus).
+        (function () {
+            var theme = null;
+            try { theme = localStorage.getItem('sudoku.theme'); } catch (e) { }
+            if (theme !== 'light' && theme !== 'dark')
+                theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', theme === 'dark' ? '#1b1b30' : '#6d83f2');
+        })();
+    </script>
 </head>
 
 <body>

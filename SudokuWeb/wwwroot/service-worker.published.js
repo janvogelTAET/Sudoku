@@ -8,22 +8,27 @@ self.addEventListener('fetch', event => event.respondWith(onFetch(event)));
 
 const cacheNamePrefix = 'offline-cache-';
 const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
-const offlineAssetsInclude = [ /\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/ ];
+const offlineAssetsInclude = [ /\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.webmanifest$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/ ];
 const offlineAssetsExclude = [ /^service-worker\.js$/ ];
 
-// Replace with your base path if you are hosting on a subfolder. Ensure there is a trailing '/'.
-const base = "/";
-const baseUrl = new URL(base, self.origin);
+// The scope of the service worker is the folder it was registered from (e.g. https://host/Sudoku/),
+// so this works both at the domain root and in a GitHub Pages sub folder.
+const baseUrl = new URL(self.registration.scope);
 const manifestUrlList = self.assetsManifest.assets.map(asset => new URL(asset.url, baseUrl).href);
 
 async function onInstall(event) {
     console.info('Service worker: Install');
 
     // Fetch and cache all matching items from the assets manifest
+    // index.html is excluded from the integrity check: publish.ps1 rewrites its <base href>
+    // after the build, so its hash in the assets manifest never matches the deployed file
+    // (which would make cache.addAll() fail and disable offline support entirely).
     const assetsRequests = self.assetsManifest.assets
         .filter(asset => offlineAssetsInclude.some(pattern => pattern.test(asset.url)))
         .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
-        .map(asset => new Request(asset.url, { integrity: asset.hash, cache: 'no-cache' }));
+        .map(asset => asset.url === 'index.html'
+            ? new Request(asset.url, { cache: 'no-cache' })
+            : new Request(asset.url, { integrity: asset.hash, cache: 'no-cache' }));
     await caches.open(cacheName).then(cache => cache.addAll(assetsRequests));
 }
 
