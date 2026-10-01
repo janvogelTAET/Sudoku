@@ -1,0 +1,47 @@
+<div class="board" role="grid" aria-label="Sudoku-Spielfeld">
+    @foreach (var cell in Game.Cells)
+    {
+        var c = cell;
+        <div class="@CellClass(cell)"
+             role="gridcell"
+             data-r="@cell.Row" data-c="@cell.Col"
+             @onclick="() => Game.Select(c)">
+            @if (cell.Value != 0)
+            {
+                @cell.Value
+            }
+            else if (cell.Notes.Count > 0)
+            {
+                <div class="notes">
+                    @for (int n = 1; n <= 9; n++)
+                    {
+                        <span>@(cell.Notes.Contains(n) ? n.ToString() : "")</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public SudokuGame Game { get; set; } = default!;
+
+    private string CellClass(SudokuCell cell)
+    {
+        var sel = Game.Selected;
+        var classes = new List<string> { "cell" };
+
+        if (cell.IsFixed) classes.Add("fixed");
+        else if (cell.IsHint) classes.Add("hint");
+
+        if (sel is not null)
+        {
+            // Zeile, Spalte und Block der gewählten Zelle + alle gleichen Zahlen hervorheben.
+            if (cell == sel) classes.Add("sel");
+            else if (cell.Row == sel.Row || cell.Col == sel.Col || cell.Box == sel.Box) classes.Add("peer");
+            if (sel.Value != 0 && cell.Value == sel.Value) classes.Add("same");
+        }
+        if (Game.ErrorsVisible && cell.IsWrong) classes.Add("wrong");
+        return string.Join(' ', classes);
+    }
+}

@@ -1,0 +1,16 @@
+@* Gemeinsamer Rahmen für Menüs: schiebt sich von unten ins Bild, Tippen daneben schließt. *@
+<div class="overlay sheet-overlay" @onclick="OnClose">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="@Title" @onclick:stopPropagation="true">
+        <div class="sheet-head">
+            <h2>@Title</h2>
+            <button class="icon-btn" aria-label="Schließen" @onclick="OnClose">✕</button>
+        </div>
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

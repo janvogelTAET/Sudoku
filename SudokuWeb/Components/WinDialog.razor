@@ -1,0 +1,59 @@
+<div class="overlay win-overlay">
+    <div class="confetti" aria-hidden="true">
+        @foreach (var piece in pieces)
+        {
+            <span style="left:@(piece.Left)%;animation-delay:@(piece.Delay.ToString(Invariant))s;animation-duration:@(piece.Duration.ToString(Invariant))s;font-size:@(piece.Size)px">@piece.Symbol</span>
+        }
+    </div>
+
+    <div class="card" role="dialog" aria-modal="true" aria-label="Geschafft">
+        <div class="big">🎉</div>
+        <h2>Gut gemacht, Leana! 💖</h2>
+        <p>Gelöst in <b>@GameText.Time(Game.Seconds)</b>@(Game.HintsUsed > 0 ? $" mit {Game.HintsUsed} {(Game.HintsUsed == 1 ? "Tipp" : "Tipps")}" : "")</p>
+
+        @if (NewRecord)
+        {
+            <div class="win-badge">🏆 Neue Bestzeit!</div>
+        }
+        @if (DailyStreak is int streak)
+        {
+            <div class="win-badge fire">🔥 @streak @(streak == 1 ? "Tag" : "Tage") in Folge</div>
+        }
+
+        <button class="btn btn-primary wide" @onclick="OnNewGame">Noch ein Spiel</button>
+        <button class="btn btn-ghost wide" @onclick="OnClose">Schließen</button>
+    </div>
+</div>
+
+@code {
+    private record Piece(int Left, double Delay, double Duration, int Size, string Symbol);
+
+    private static readonly string[] Symbols = ["💖", "💜", "✨", "🎉", "💕", "⭐", "🌸"];
+
+    // CSS braucht Dezimalpunkte, egal welche Sprache das Gerät hat.
+    private static readonly System.Globalization.CultureInfo Invariant = System.Globalization.CultureInfo.InvariantCulture;
+
+    private List<Piece> pieces = [];
+
+    [Parameter, EditorRequired] public SudokuGame Game { get; set; } = default!;
+    [Parameter] public bool NewRecord { get; set; }
+
+    /// <summary>Serie nach einem gelösten täglichen Rätsel (sonst null).</summary>
+    [Parameter] public int? DailyStreak { get; set; }
+
+    [Parameter] public EventCallback OnNewGame { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    protected override void OnInitialized()
+    {
+        var random = new Random();
+        pieces = Enumerable.Range(0, 36)
+            .Select(_ => new Piece(
+                Left: random.Next(0, 100),
+                Delay: Math.Round(random.NextDouble() * 2.5, 2),
+                Duration: Math.Round(3 + random.NextDouble() * 3, 2),
+                Size: random.Next(16, 32),
+                Symbol: Symbols[random.Next(Symbols.Length)]))
+            .ToList();
+    }
+}

@@ -1,0 +1,35 @@
+<Sheet Title="Neues Spiel" OnClose="OnClose">
+    <button class="daily-card" @onclick="OnDaily">
+        <span class="flame">🔥</span>
+        <span class="item-text">
+            <b>Tägliches Rätsel</b>
+            <small>@(DailyDone ? "Heute schon geschafft ✓" : "Jeden Tag ein neues – halte deine Serie!")</small>
+        </span>
+        <span class="chev">›</span>
+    </button>
+
+    <div class="section-label">Zufälliges Spiel</div>
+    <div class="levels">
+        @foreach (var level in Enum.GetValues<Difficulty>())
+        {
+            var d = level;
+            <button class="level" @onclick="() => OnStart.InvokeAsync(d)">
+                <span class="emoji">@d.Emoji()</span>
+                <span class="item-text"><b>@d</b><small>@d.Tagline()</small></span>
+            </button>
+        }
+    </div>
+
+    @if (WillDiscard)
+    {
+        <p class="note">Das aktuelle Spiel wird dabei beendet.</p>
+    }
+</Sheet>
+
+@code {
+    [Parameter] public bool DailyDone { get; set; }
+    [Parameter] public bool WillDiscard { get; set; }
+    [Parameter] public EventCallback<Difficulty> OnStart { get; set; }
+    [Parameter] public EventCallback OnDaily { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+}

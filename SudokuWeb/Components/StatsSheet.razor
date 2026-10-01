@@ -1,0 +1,34 @@
+<Sheet Title="Statistik" OnClose="OnClose">
+    <div class="mini-stats">
+        <div><b>@Stats.TotalPlayed</b><span>Gespielt</span></div>
+        <div><b>@Stats.TotalWon</b><span>Gewonnen</span></div>
+        <div><b>🔥 @Daily.BestStreak</b><span>Beste Serie</span></div>
+    </div>
+
+    <table class="stats-table">
+        <thead>
+            <tr><th></th><th>Gespielt</th><th>Gewonnen</th><th>Bestzeit</th><th>Ø Zeit</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var level in Enum.GetValues<Difficulty>())
+            {
+                var s = Stats.For(level);
+                <tr>
+                    <th>@level.Emoji() @level</th>
+                    <td>@s.Played</td>
+                    <td>@s.Won</td>
+                    <td>@GameText.TimeOrDash(s.BestSeconds)</td>
+                    <td>@GameText.TimeOrDash(s.AverageSeconds)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="note">Bestzeiten zählen nur ohne Tipp.</p>
+    <p class="credit">Für Leana 💖 · viel Spaß beim Rätseln</p>
+</Sheet>
+
+@code {
+    [Parameter, EditorRequired] public GameStats Stats { get; set; } = default!;
+    [Parameter, EditorRequired] public DailyProgress Daily { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+}

@@ -1,141 +1,249 @@
 @page "/"
-@using SudokuWeb.Game
 @implements IDisposable
+@inject PlayerData Data
+@inject BrowserInterop Browser
 
-<div class="app" tabindex="0" @onkeydown="OnKeyDown">
-    <header>
-        <h1><span class="heart">💜</span> Leanas Sudoku</h1>
-        <div class="stats">
-            <div class="chip">Zeit<b>@TimeText</b></div>
+@if (!loaded)
+{
+    <div class="loading-screen"><div class="spinner"></div></div>
+}
+else
+{
+    <div class="app" tabindex="0" @onkeydown="OnKeyDown">
+        <header>
+            <h1><span class="heart">💜</span> Leanas Sudoku</h1>
+            <button class="streak-chip @(DoneToday ? "done" : "")" aria-label="Tägliches Rätsel und Serie" @onclick="() => sheet = Sheets.Daily">
+                <span class="flame">🔥</span><b>@Streak</b>
+                @if (!DoneToday)
+                {
+                    <i class="dot" title="Heutiges Rätsel noch offen"></i>
+                }
+            </button>
+        </header>
+
+        <div class="infobar">
+            <GameClock Game="game" Paused="Paused" OnAutoSave="SaveGame" />
+            <div class="status @StatusClass">@StatusText</div>
+            <button class="icon-btn" aria-label="Statistik" @onclick="() => sheet = Sheets.Stats">
+                <svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
+            </button>
+            <button class="icon-btn" aria-label="Hell/Dunkel umschalten" @onclick="ToggleTheme">
+                @if (theme == "dark")
+                {
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+                }
+                else
+                {
+                    <svg viewBox="0 0 24 24"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg>
+                }
+            </button>
+            <button class="icon-btn accent" aria-label="Neues Spiel" @onclick="() => sheet = Sheets.NewGame">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
         </div>
-    </header>
 
-    <div class="toolbar">
-        <select @bind="selectedDifficulty" aria-label="Schwierigkeit">
-            <option value="@Difficulty.Einfach">😊 Einfach</option>
-            <option value="@Difficulty.Mittel">🙂 Mittel</option>
-            <option value="@Difficulty.Schwer">😤 Schwer</option>
-            <option value="@Difficulty.Experte">🔥 Experte</option>
-        </select>
-        <button class="btn btn-check" @onclick="game.Check">Prüfen</button>
-        <button class="btn btn-primary" @onclick="NewGame">Neues Spiel</button>
+        <Board Game="game" />
+        <Controls Game="game" OnChanged="OnGameChanged" />
     </div>
 
-    @if (game.LastCheckErrors is int errs && !game.Solved)
+    @switch (sheet)
     {
-        <div class="banner @(errs == 0 ? "ok" : "bad")">
-            @(errs == 0
-                ? "✓ Alles richtig so weit – weiter so!"
-                : $"✗ Noch {errs} {(errs == 1 ? "Feld stimmt" : "Felder stimmen")} nicht")
-        </div>
+        case Sheets.NewGame:
+            <NewGameSheet DailyDone="DoneToday" WillDiscard="game.InProgress"
+                          OnStart="StartNewGame" OnDaily="() => sheet = Sheets.Daily" OnClose="CloseSheet" />
+            break;
+        case Sheets.Daily:
+            <DailySheet Progress="Data.Daily" Today="today" InProgressToday="PlayingTodaysDaily"
+                        WillDiscard="game.InProgress && !PlayingTodaysDaily"
+                        OnStartDaily="StartDaily" OnClose="CloseSheet" />
+            break;
+        case Sheets.Stats:
+            <StatsSheet Stats="Data.Stats" Daily="Data.Daily" OnClose="CloseSheet" />
+            break;
     }
 
-    <div class="board">
-        @foreach (var cell in game.Cells)
-        {
-            <div class="@CellClass(cell)"
-                 data-r="@cell.Row" data-c="@cell.Col"
-                 @onclick="() => game.Select(cell)">
-                @if (cell.Value != 0)
-                {
-                    @cell.Value
-                }
-                else if (cell.Notes.Count > 0)
-                {
-                    <div class="notes">
-                        @for (int n = 1; n <= 9; n++)
-                        {
-                            <span>@(cell.Notes.Contains(n) ? n.ToString() : "")</span>
-                        }
-                    </div>
-                }
-            </div>
-        }
-    </div>
-
-    <div class="pad">
-        @for (int n = 1; n <= 9; n++)
-        {
-            int num = n;
-            <button class="num @(game.Remaining(num) <= 0 ? "done" : "")" @onclick="() => Enter(num)">
-                @num<span class="left">@(game.Remaining(num) > 0 ? game.Remaining(num).ToString() : "")</span>
-            </button>
-        }
-    </div>
-
-    <div class="actions">
-        <button class="act" @onclick="game.Undo">
-            <svg viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7L3 9"/></svg>
-            Rückgängig
-        </button>
-        <button class="act" @onclick="game.Erase">
-            <svg viewBox="0 0 24 24"><path d="M3 16l7 7h9l4-4-13-13-7 7z"/><path d="M14 7l4 4"/></svg>
-            Löschen
-        </button>
-        <button class="act @(game.NotesMode ? "on" : "")" @onclick="game.ToggleNotesMode">
-            <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-            Notizen
-        </button>
-        <button class="act" @onclick="game.Hint">
-            <svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12c.7.7 1 1.3 1 2h6c0-.7.3-1.3 1-2a7 7 0 0 0-4-12z"/></svg>
-            Tipp
-        </button>
-    </div>
-</div>
-
-<div class="credit">Für Leana 💜 · viel Spaß beim Rätseln</div>
-
-@if (game.Solved)
-{
-    <div class="overlay show">
-        <div class="card">
-            <div class="big">🎉</div>
-            <h2>Geschafft!</h2>
-            <p>Gelöst in @TimeText. Stark gemacht! 💪</p>
-            <button class="btn btn-primary" style="width:100%" @onclick="NewGame">Nochmal spielen</button>
-        </div>
-    </div>
+    @if (showWin)
+    {
+        <WinDialog Game="game" NewRecord="newRecord" DailyStreak="dailyStreakAfterWin"
+                   OnNewGame="OpenNewGameFromWin" OnClose="() => showWin = false" />
+    }
 }
 
 @code {
+    private enum Sheets { None, NewGame, Daily, Stats }
+
     private readonly SudokuGame game = new();
-    private Difficulty selectedDifficulty = Difficulty.Einfach;
-    private System.Threading.Timer? timer;
+    private DotNetObjectReference<Home>? selfReference;
 
-    private string TimeText => $"{game.Seconds / 60}:{game.Seconds % 60:00}";
+    private bool loaded;
+    private DateOnly today;
+    private string theme = "light";
+    private Sheets sheet = Sheets.None;
 
-    protected override void OnInitialized()
+    private bool winHandled;
+    private bool showWin;
+    private bool newRecord;
+    private int? dailyStreakAfterWin;
+
+    private bool Paused => sheet != Sheets.None || showWin;
+    private int Streak => Data.Daily.CurrentStreak(today);
+    private bool DoneToday => Data.Daily.IsSolved(today);
+    private bool PlayingTodaysDaily => game.DailyDate == today && !game.Solved;
+
+    private string StatusClass => game.LastCheckErrors is int errors && !game.Solved ? (errors == 0 ? "ok" : "bad") : "";
+
+    private string StatusText
     {
-        game.NewGame(selectedDifficulty);
-        timer = new System.Threading.Timer(_ =>
+        get
         {
-            if (!game.Solved)
-            {
-                game.Seconds++;
-                InvokeAsync(StateHasChanged);
-            }
-        }, null, 1000, 1000);
+            if (game.LastCheckErrors is int errors && !game.Solved)
+                return errors == 0 ? "✓ Bisher alles richtig" : $"✗ {errors} {(errors == 1 ? "Feld" : "Felder")} falsch";
+
+            if (game.DailyDate is { } day)
+                return day == today ? $"Täglich · {game.Difficulty}" : $"Täglich {day.Short()} · {game.Difficulty}";
+
+            return $"{game.Difficulty.Emoji()} {game.Difficulty}";
+        }
     }
 
-    private void NewGame() => game.NewGame(selectedDifficulty);
+    protected override async Task OnInitializedAsync()
+    {
+        await Data.LoadAsync();
+        today = await Browser.GetTodayAsync();
+        theme = await Browser.GetThemeAsync();
 
-    private void Enter(int number) => game.Enter(number);
+        // Spielstand von der letzten Sitzung fortsetzen (die iPhone-App wird oft vom System beendet).
+        var saved = await Data.LoadGameAsync();
+        if (!game.Restore(saved))
+            await StartNewGame(Difficulty.Einfach);
 
-    private void OnKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+        selfReference = DotNetObjectReference.Create(this);
+        await Browser.ListenForVisibilityAsync(selfReference);
+        loaded = true;
+    }
+
+    /// <summary>Vom Browser aufgerufen, wenn die App in den Hintergrund geht oder zurückkommt.</summary>
+    [JSInvokable]
+    public async Task OnVisibilityChanged(bool hidden)
+    {
+        if (hidden)
+        {
+            await SaveGame();
+            return;
+        }
+
+        // Zurück in der App: vielleicht ist inzwischen ein neuer Tag.
+        today = await Browser.GetTodayAsync();
+        StateHasChanged();
+    }
+
+    // ---- Spielablauf -------------------------------------------------------
+
+    private async Task StartNewGame(Difficulty difficulty)
+    {
+        game.NewGame(difficulty);
+        Data.Stats.RecordStarted(difficulty);
+        await AfterGameStarted();
+    }
+
+    private async Task StartDaily()
+    {
+        if (DoneToday) return;
+        if (PlayingTodaysDaily)
+        {
+            sheet = Sheets.None;     // läuft schon -> einfach weiterspielen
+            return;
+        }
+
+        today = await Browser.GetTodayAsync();
+        game.StartDaily(today);
+        Data.Stats.RecordStarted(game.Difficulty);
+        await AfterGameStarted();
+    }
+
+    private async Task AfterGameStarted()
+    {
+        winHandled = false;
+        showWin = false;
+        sheet = Sheets.None;
+        await Data.SaveStatsAsync();
+        await SaveGame();
+    }
+
+    private async Task OnGameChanged()
+    {
+        if (game.Solved && !winHandled)
+            await HandleWin();
+        else
+            await SaveGame();
+    }
+
+    private async Task HandleWin()
+    {
+        winHandled = true;
+        newRecord = Data.Stats.RecordWin(game.Difficulty, game.Seconds, game.HintsUsed);
+
+        dailyStreakAfterWin = null;
+        if (game.DailyDate is { } day)
+        {
+            today = await Browser.GetTodayAsync();
+            Data.Daily.MarkSolved(day, game.Seconds);
+            dailyStreakAfterWin = Data.Daily.CurrentStreak(today);
+            await Data.SaveDailyAsync();
+        }
+
+        await Data.SaveStatsAsync();
+        await Data.ClearGameAsync();    // fertiges Spiel nicht beim nächsten Start wiederherstellen
+        showWin = true;
+    }
+
+    // Speichert nach jedem Zug (und regelmäßig die Zeit) den Spielstand im Browser.
+    private async Task SaveGame()
+    {
+        if (game.HasCells && !game.Solved)
+            await Data.SaveGameAsync(game);
+    }
+
+    private void CloseSheet() => sheet = Sheets.None;
+
+    private void OpenNewGameFromWin()
+    {
+        showWin = false;
+        sheet = Sheets.NewGame;
+    }
+
+    private async Task ToggleTheme()
+    {
+        theme = theme == "dark" ? "light" : "dark";
+        await Browser.SetThemeAsync(theme);
+    }
+
+    // ---- Tastatur (Desktop) ----------------------------------------------
+
+    private async Task OnKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
     {
         if (e.Key.Length == 1 && e.Key[0] >= '1' && e.Key[0] <= '9')
             game.Enter(e.Key[0] - '0');
         else if (e.Key is "Backspace" or "Delete" or "0")
             game.Erase();
+        else if (e.Key is "n" or "N")
+            game.ToggleNotesMode();
         else
+        {
             Move(e.Key);
+            return;     // nur die Auswahl hat sich geändert, nichts zu speichern
+        }
+
+        await OnGameChanged();
     }
 
     private void Move(string key)
     {
+        if (!key.StartsWith("Arrow")) return;
+
         if (game.Selected is null)
         {
-            if (game.Cells.Length > 0) game.Select(game.Cells[0]);
+            if (game.HasCells) game.Select(game.Cells[0]);
             return;
         }
         int r = game.Selected.Row, c = game.Selected.Col;
@@ -150,21 +258,5 @@
         game.Select(game.Cells[r * 9 + c]);
     }
 
-    private string CellClass(SudokuCell cell)
-    {
-        var sel = game.Selected;
-        var classes = new List<string> { "cell" };
-
-        if (cell.IsFixed) classes.Add("fixed");
-        if (sel is not null)
-        {
-            if (cell == sel) classes.Add("sel");
-            else if (cell.Row == sel.Row || cell.Col == sel.Col || cell.Box == sel.Box) classes.Add("peer");
-            if (sel.Value != 0 && cell.Value == sel.Value) classes.Add("same");
-        }
-        if (game.ErrorsVisible && cell.IsWrong) classes.Add("wrong");
-        return string.Join(' ', classes);
-    }
-
-    public void Dispose() => timer?.Dispose();
+    public void Dispose() => selfReference?.Dispose();
 }

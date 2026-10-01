@@ -1,0 +1,30 @@
+@implements IDisposable
+
+@* Eigene Komponente, damit nur die Uhr jede Sekunde neu gezeichnet wird und nicht das ganze Spielfeld. *@
+<span class="clock" aria-label="Zeit">⏱ @GameText.Time(Game.Seconds)</span>
+
+@code {
+    private System.Threading.Timer? timer;
+
+    [Parameter, EditorRequired] public SudokuGame Game { get; set; } = default!;
+    [Parameter] public bool Paused { get; set; }
+
+    /// <summary>Wird alle paar Sekunden aufgerufen, damit der Spielstand (Zeit) gespeichert werden kann.</summary>
+    [Parameter] public Func<Task>? OnAutoSave { get; set; }
+
+    protected override void OnInitialized()
+        => timer = new System.Threading.Timer(_ => InvokeAsync(Tick), null, 1000, 1000);
+
+    private async Task Tick()
+    {
+        if (Paused || !Game.HasCells || Game.Solved) return;
+
+        Game.Seconds++;
+        StateHasChanged();
+
+        if (Game.Seconds % 5 == 0 && OnAutoSave is not null)
+            await OnAutoSave();
+    }
+
+    public void Dispose() => timer?.Dispose();
+}

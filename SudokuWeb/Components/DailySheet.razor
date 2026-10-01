@@ -1,0 +1,87 @@
+<Sheet Title="Tägliches Rätsel" OnClose="OnClose">
+    <div class="streak-hero @(Streak > 0 ? "alive" : "")">
+        <div class="big-flame">🔥</div>
+        <div class="streak-number">@Streak</div>
+        <div class="streak-label">@(Streak == 1 ? "Tag in Folge" : "Tage in Folge")</div>
+        @if (Streak > 0 && !DoneToday)
+        {
+            <div class="streak-hint">Löse das heutige Rätsel, damit die Serie nicht endet!</div>
+        }
+        else if (Streak == 0)
+        {
+            <div class="streak-hint">Löse das heutige Rätsel, um eine Serie zu starten.</div>
+        }
+    </div>
+
+    <div class="mini-stats">
+        <div><b>@Progress.BestStreak</b><span>Beste Serie</span></div>
+        <div><b>@Progress.TotalSolved</b><span>Rätsel gelöst</span></div>
+        <div><b>@(DoneToday ? GameText.Time(Progress.SecondsFor(Today) ?? 0) : "–")</b><span>Zeit heute</span></div>
+    </div>
+
+    <div class="calendar" aria-label="Letzte Wochen">
+        @for (int i = 0; i < 7; i++)
+        {
+            <div class="cal-head">@GameText.Weekday(i)</div>
+        }
+        @foreach (var day in CalendarDays())
+        {
+            <div class="@DayClass(day)" title="@day.ToString("dd.MM.yyyy")">
+                @if (Progress.IsSolved(day))
+                {
+                    <span>🔥</span>
+                }
+                else
+                {
+                    @day.Day
+                }
+            </div>
+        }
+    </div>
+
+    @if (DoneToday)
+    {
+        <button class="btn btn-primary wide" disabled>Heute geschafft 🎉 – bis morgen!</button>
+    }
+    else
+    {
+        <button class="btn btn-primary wide" @onclick="OnStartDaily">
+            @(InProgressToday ? "Weiterspielen" : "Heutiges Rätsel starten")
+        </button>
+        @if (WillDiscard)
+        {
+            <p class="note">Das aktuelle Spiel wird dabei beendet.</p>
+        }
+    }
+</Sheet>
+
+@code {
+    private const int Weeks = 5;
+
+    [Parameter, EditorRequired] public DailyProgress Progress { get; set; } = default!;
+    [Parameter] public DateOnly Today { get; set; }
+    [Parameter] public bool InProgressToday { get; set; }
+    [Parameter] public bool WillDiscard { get; set; }
+    [Parameter] public EventCallback OnStartDaily { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private int Streak => Progress.CurrentStreak(Today);
+    private bool DoneToday => Progress.IsSolved(Today);
+
+    // Die letzten Wochen, Montag bis Sonntag; die aktuelle Woche ist die letzte Zeile.
+    private IEnumerable<DateOnly> CalendarDays()
+    {
+        var start = Today.AddDays(-Today.MondayIndex() - 7 * (Weeks - 1));
+        for (int i = 0; i < Weeks * 7; i++)
+            yield return start.AddDays(i);
+    }
+
+    private string DayClass(DateOnly day)
+    {
+        var classes = new List<string> { "cal-day" };
+        if (Progress.IsSolved(day)) classes.Add("solved");
+        if (day == Today) classes.Add("today");
+        if (day > Today) classes.Add("future");
+        return string.Join(' ', classes);
+    }
+}

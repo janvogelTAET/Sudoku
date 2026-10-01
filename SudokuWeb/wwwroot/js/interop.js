@@ -19,10 +19,10 @@ window.sudokuInterop = {
         if (meta) meta.setAttribute('content', theme === 'dark' ? '#1b1b30' : '#6d83f2');
     },
 
-    // Meldet an C#, wenn die App wieder in den Vordergrund kommt (z. B. am naechsten Tag).
-    onResume: function (dotNetRef) {
+    // Meldet an C#, wenn die App in den Hintergrund geht bzw. wieder sichtbar wird.
+    onVisibilityChange: function (dotNetRef) {
         document.addEventListener('visibilitychange', function () {
-            if (!document.hidden) dotNetRef.invokeMethodAsync('OnResume');
+            dotNetRef.invokeMethodAsync('OnVisibilityChanged', document.hidden);
         });
     }
 };

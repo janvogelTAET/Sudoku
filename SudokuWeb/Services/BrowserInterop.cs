@@ -57,10 +57,13 @@ public class BrowserInterop(IJSRuntime js)
         catch (Exception) { }
     }
 
-    /// <summary>Ruft <c>OnResume</c> auf dem Objekt auf, sobald die App wieder sichtbar wird.</summary>
-    public async Task ListenForResumeAsync<T>(DotNetObjectReference<T> target) where T : class
+    /// <summary>
+    /// Ruft <c>OnVisibilityChanged(bool hidden)</c> auf dem Objekt auf, sobald die App in den
+    /// Hintergrund geht oder wieder sichtbar wird (z. B. am nächsten Tag).
+    /// </summary>
+    public async Task ListenForVisibilityAsync<T>(DotNetObjectReference<T> target) where T : class
     {
-        try { await js.InvokeVoidAsync("sudokuInterop.onResume", target); }
+        try { await js.InvokeVoidAsync("sudokuInterop.onVisibilityChange", target); }
         catch (Exception) { }
     }
 }
