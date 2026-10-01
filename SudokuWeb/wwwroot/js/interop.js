@@ -26,6 +26,17 @@ window.sudokuInterop = {
         });
     },
 
+    // iPhone/iPad im normalen Safari-Tab (also NICHT als installierte App)?
+    // Nur dort ergibt der Hinweis "Zum Home-Bildschirm" Sinn.
+    isIosBrowserTab: function () {
+        var ua = navigator.userAgent;
+        var ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var otherBrowser = /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+        var standalone = navigator.standalone === true ||
+            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+        return ios && !otherBrowser && !standalone;
+    },
+
     // Registriert den Service Worker und blendet einen Hinweis ein, sobald eine neue Version
     // bereitsteht ("waiting"). Antippen -> SKIP_WAITING an den Worker -> Seite neu laden.
     registerServiceWorker: function (script) {

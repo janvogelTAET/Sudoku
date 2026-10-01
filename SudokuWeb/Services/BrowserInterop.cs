@@ -66,4 +66,19 @@ public class BrowserInterop(IJSRuntime js)
         try { await js.InvokeVoidAsync("sudokuInterop.onVisibilityChange", target); }
         catch (Exception) { }
     }
+
+    private const string InstallHintKey = "sudoku.install-hint-dismissed";
+
+    /// <summary>Soll der "Zum Home-Bildschirm"-Hinweis gezeigt werden? (iOS-Safari-Tab und noch nicht weggeklickt)</summary>
+    public async Task<bool> ShouldShowInstallHintAsync()
+    {
+        try
+        {
+            if (await GetItemAsync(InstallHintKey) is not null) return false;
+            return await js.InvokeAsync<bool>("sudokuInterop.isIosBrowserTab");
+        }
+        catch (Exception) { return false; }
+    }
+
+    public Task DismissInstallHintAsync() => SetItemAsync(InstallHintKey, "1");
 }

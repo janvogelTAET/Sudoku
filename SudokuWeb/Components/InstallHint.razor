@@ -1,0 +1,25 @@
+@* Einmaliger Hinweis für iPhone-Safari: wie man die Seite als App auf den Home-Bildschirm legt. *@
+@if (visible)
+{
+    <div class="install-hint" role="note">
+        <span class="install-text">
+            <b>Tipp:</b> Teilen <span class="share-icon">⬆️</span> → „Zum Home-Bildschirm“, dann spielst du wie in einer App
+        </span>
+        <button class="icon-btn" aria-label="Hinweis schließen" @onclick="Dismiss">✕</button>
+    </div>
+}
+
+@code {
+    [Inject] private BrowserInterop Browser { get; set; } = default!;
+
+    private bool visible;
+
+    protected override async Task OnInitializedAsync()
+        => visible = await Browser.ShouldShowInstallHintAsync();
+
+    private async Task Dismiss()
+    {
+        visible = false;
+        await Browser.DismissInstallHintAsync();
+    }
+}
