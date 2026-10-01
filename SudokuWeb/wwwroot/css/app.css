@@ -91,7 +91,12 @@ h1 .heart{-webkit-text-fill-color:initial;}
 
 /* ===== Infozeile: Uhr, Status, Werkzeuge ===== */
 .infobar{display:flex;align-items:center;gap:2px;height:44px;margin-bottom:6px;}
-.clock{min-width:62px;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);}
+.clock{
+  flex:none;min-width:72px;height:42px;padding:0 8px;margin-left:-8px;border-radius:14px;background:transparent;
+  font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);text-align:left;
+}
+.clock:active{background:var(--soft);}
+.clock.paused{color:var(--accent);}
 .status{
   flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--muted);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px;
@@ -107,18 +112,31 @@ h1 .heart{-webkit-text-fill-color:initial;}
 .icon-btn.accent{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;margin-left:4px;}
 
 /* ===== Spielfeld ===== */
-.board{
-  display:grid;grid-template-columns:repeat(9,1fr);
+.board-wrap{
+  position:relative;
   aspect-ratio:1/1;
   /* passt in die Hoehe: iPhone SE bis Pro Max ohne Scrollen */
   width:min(100%,max(240px,calc(100vh - 322px - env(safe-area-inset-top) - env(safe-area-inset-bottom))));
   width:min(100%,max(240px,calc(100dvh - 322px - env(safe-area-inset-top) - env(safe-area-inset-bottom))));
   margin:0 auto;
+}
+.board{
+  display:grid;grid-template-columns:repeat(9,1fr);
+  width:100%;height:100%;
   container-type:inline-size;
   background:var(--line);
   border:3px solid var(--thick);border-radius:14px;overflow:hidden;
   gap:1px;touch-action:manipulation;
+  transition:filter .2s ease,opacity .2s ease;
 }
+.board.paused{filter:blur(14px);opacity:.45;pointer-events:none;}
+.pause-cover{
+  position:absolute;inset:0;z-index:2;border-radius:14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  font-size:22px;color:var(--ink);
+}
+.pause-icon{font-size:44px;line-height:1;}
+.pause-cover .btn{padding:12px 36px;}
 .cell{
   background:var(--cell);display:flex;align-items:center;justify-content:center;
   font-size:clamp(18px,6.2vw,30px);font-size:6.4cqi;
@@ -153,6 +171,7 @@ h1 .heart{-webkit-text-fill-color:initial;}
 .num:active{transform:scale(.93);background:var(--soft-press);}
 .num .left{position:absolute;bottom:3px;right:7px;font-size:11px;color:var(--muted);font-weight:600;}
 .num.done{opacity:.3;pointer-events:none;}
+.pad.locked,.actions.locked{opacity:.4;pointer-events:none;}
 .num.erase{color:var(--muted);}
 .num.erase svg{width:26px;height:26px;}
 .pad.notes-on .num:not(.erase){font-size:20px;font-style:italic;box-shadow:inset 0 0 0 2px var(--accent);}

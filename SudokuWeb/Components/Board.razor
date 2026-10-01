@@ -1,4 +1,4 @@
-<div class="board" role="grid" aria-label="Sudoku-Spielfeld">
+<div class="board @(Hidden ? "paused" : "")" role="grid" aria-label="Sudoku-Spielfeld">
     @foreach (var cell in Game.Cells)
     {
         var c = cell;
@@ -25,6 +25,9 @@
 
 @code {
     [Parameter, EditorRequired] public SudokuGame Game { get; set; } = default!;
+
+    /// <summary>Während der Pause werden die Zahlen unleserlich gemacht.</summary>
+    [Parameter] public bool Hidden { get; set; }
 
     private string CellClass(SudokuCell cell)
     {

@@ -1,5 +1,5 @@
 @* Zahlen-Tastatur (mit Rest-Anzeige) und die Aktions-Leiste. *@
-<div class="pad @(Game.NotesMode ? "notes-on" : "")">
+<div class="pad @(Game.NotesMode ? "notes-on" : "") @(Locked ? "locked" : "")">
     @for (int n = 1; n <= 9; n++)
     {
         int num = n;
@@ -14,7 +14,7 @@
     </button>
 </div>
 
-<div class="actions">
+<div class="actions @(Locked ? "locked" : "")">
     <button class="act" disabled="@(!Game.CanUndo)" @onclick="() => Do(Game.Undo)">
         <svg viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7L3 9"/></svg>
         Zurück
@@ -35,6 +35,9 @@
 
 @code {
     [Parameter, EditorRequired] public SudokuGame Game { get; set; } = default!;
+
+    /// <summary>Gesperrt (z. B. in der Pause): Tippen hat keine Wirkung.</summary>
+    [Parameter] public bool Locked { get; set; }
 
     /// <summary>Wird nach jeder Änderung am Spiel aufgerufen (zum Speichern und Neuzeichnen).</summary>
     [Parameter] public EventCallback OnChanged { get; set; }

@@ -22,7 +22,7 @@ else
         </header>
 
         <div class="infobar">
-            <GameClock Game="game" Paused="Paused" OnAutoSave="SaveGame" />
+            <GameClock Game="game" Paused="Paused" UserPaused="userPaused" OnToggle="TogglePause" OnAutoSave="SaveGame" />
             <div class="status @StatusClass">@StatusText</div>
             <button class="icon-btn" aria-label="Statistik" @onclick="() => sheet = Sheets.Stats">
                 <svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
@@ -42,8 +42,18 @@ else
             </button>
         </div>
 
-        <Board Game="game" />
-        <Controls Game="game" OnChanged="OnGameChanged" />
+        <div class="board-wrap">
+            <Board Game="game" Hidden="userPaused" />
+            @if (userPaused)
+            {
+                <div class="pause-cover">
+                    <div class="pause-icon">⏸</div>
+                    <b>Pause</b>
+                    <button class="btn btn-primary" @onclick="TogglePause">Weiter</button>
+                </div>
+            }
+        </div>
+        <Controls Game="game" Locked="userPaused" OnChanged="OnGameChanged" />
     </div>
 
     <InstallHint />
@@ -87,11 +97,12 @@ else
     private string theme = "light";
     private Sheets sheet = Sheets.None;
 
+    private bool userPaused;
     private bool showWin;
     private bool newRecord;
     private int? dailyStreakAfterWin;
 
-    private bool Paused => sheet != Sheets.None || showWin;
+    private bool Paused => sheet != Sheets.None || showWin || userPaused;
     private int Streak => Data.Daily.CurrentStreak(today);
     private bool DoneToday => Data.Daily.IsSolved(today);
 
@@ -179,6 +190,7 @@ else
     // Nach Start/Wechsel eines Spiels: Anzeige aufräumen, Statistik und beide Plätze sichern.
     private async Task AfterGameChanged()
     {
+        userPaused = false;
         showWin = false;
         sheet = Sheets.None;
         await Data.SaveStatsAsync();
@@ -213,6 +225,12 @@ else
             await Data.SaveSlotAsync(session, session.ActiveSlot);
     }
 
+    private void TogglePause()
+    {
+        if (game.Solved) return;
+        userPaused = !userPaused;
+    }
+
     private void CloseSheet() => sheet = Sheets.None;
 
     private void OpenNewGameFromWin()
@@ -231,6 +249,17 @@ else
 
     private async Task OnKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
     {
+        if (userPaused)
+        {
+            if (e.Key is "p" or "P" or " " or "Enter") userPaused = false;
+            return;
+        }
+        if (e.Key is "p" or "P")
+        {
+            TogglePause();
+            return;
+        }
+
         if (e.Key.Length == 1 && e.Key[0] >= '1' && e.Key[0] <= '9')
             game.Enter(e.Key[0] - '0');
         else if (e.Key is "Backspace" or "Delete" or "0")

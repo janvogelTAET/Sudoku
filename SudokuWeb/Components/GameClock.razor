@@ -1,13 +1,21 @@
 @implements IDisposable
 
 @* Eigene Komponente, damit nur die Uhr jede Sekunde neu gezeichnet wird und nicht das ganze Spielfeld. *@
-<span class="clock" aria-label="Zeit">⏱ @GameText.Time(Game.Seconds)</span>
+<button class="clock @(UserPaused ? "paused" : "")" aria-label="@(UserPaused ? "Weiter" : "Pause")" @onclick="OnToggle">
+    @(UserPaused ? "⏸" : "⏱") @GameText.Time(Game.Seconds)
+</button>
 
 @code {
     private System.Threading.Timer? timer;
 
     [Parameter, EditorRequired] public SudokuGame Game { get; set; } = default!;
     [Parameter] public bool Paused { get; set; }
+
+    /// <summary>Hat die Spielerin die Pause selbst angetippt? (nur für die Anzeige)</summary>
+    [Parameter] public bool UserPaused { get; set; }
+
+    /// <summary>Tippen auf die Uhr schaltet die Pause um.</summary>
+    [Parameter] public EventCallback OnToggle { get; set; }
 
     /// <summary>Wird alle paar Sekunden aufgerufen, damit der Spielstand (Zeit) gespeichert werden kann.</summary>
     [Parameter] public Func<Task>? OnAutoSave { get; set; }
