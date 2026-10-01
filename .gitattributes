@@ -1,0 +1,3 @@
+# docs/ ist die fertig gebaute Web-App. Der Service Worker prueft die Dateien per
+# Hash, deshalb muss Git sie Byte fuer Byte speichern (keine CRLF/LF-Umwandlung).
+docs/** -text
