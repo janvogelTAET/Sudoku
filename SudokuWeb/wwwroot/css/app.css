@@ -291,6 +291,17 @@ h1 .heart{-webkit-text-fill-color:initial;}
   .confetti span,.card .big,.big-flame,.streak-chip .dot{animation:none;}
 }
 
+/* ===== Hinweis-Balken (neue Version) ===== */
+.top-banner{
+  position:fixed;z-index:100;left:50%;transform:translateX(-50%);
+  top:calc(env(safe-area-inset-top) + 8px);width:calc(100% - 24px);max-width:456px;
+  padding:12px 16px;border-radius:16px;font-size:14px;font-weight:700;color:#fff;
+  background:linear-gradient(135deg,var(--fire1),var(--fire2));box-shadow:0 10px 26px rgba(0,0,0,.3);
+  animation:slide-down .35s cubic-bezier(.2,.9,.3,1);
+}
+.top-banner:disabled{opacity:.7;}
+@keyframes slide-down{from{transform:translate(-50%,-30px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+
 /* ===== Blazor ===== */
 #blazor-error-ui{
   background:#ffd7d7;color:#7a1020;bottom:0;box-shadow:0 -1px 2px rgba(0,0,0,.2);
