@@ -1,11 +1,11 @@
 # Veroeffentlicht die Blazor-WebAssembly-App als statische Dateien nach docs/.
-# Den Ordner docs/ dann bei einem statischen Hoster hochladen
-# (z. B. Netlify: Site oeffnen -> Deploys -> Ordner per Drag & Drop).
+# GitHub Pages liefert docs/ aus: https://janvogeltaet.github.io/Sudoku/
+# Danach: git add docs && git commit -m "update" && git push
 #
-# Aufruf:  ./publish.ps1                 (App liegt im Root der Domain)
-#          ./publish.ps1 -BasePath /Sudoku/   (App liegt in einem Unterordner)
+# Aufruf:  ./publish.ps1                 (GitHub Pages unter /Sudoku/)
+#          ./publish.ps1 -BasePath /      (anderer Hoster, App im Root)
 
-param([string]$BasePath = "/")
+param([string]$BasePath = "/Sudoku/")
 
 $ErrorActionPreference = "Stop"
 $repoPath = $BasePath
